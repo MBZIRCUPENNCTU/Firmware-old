@@ -44,7 +44,6 @@
 #include <uORB/topics/actuator_outputs.h>
 #include <uORB/topics/vehicle_attitude.h>
 #include <uORB/topics/vehicle_status.h>
-#include <uORB/topics/battery_status.h>
 #include <drivers/drv_accel.h>
 #include <drivers/drv_gyro.h>
 #include <drivers/drv_baro.h>
@@ -52,7 +51,6 @@
 #include <drivers/drv_hrt.h>
 #include <drivers/drv_rc_input.h>
 #include <systemlib/perf_counter.h>
-#include <systemlib/battery.h>
 #include <uORB/uORB.h>
 #include <uORB/topics/optical_flow.h>
 #include <v1.0/mavlink_types.h>
@@ -237,8 +235,6 @@ private:
 		_baro_pub(nullptr),
 		_gyro_pub(nullptr),
 		_mag_pub(nullptr),
-		_flow_pub(nullptr),
-		_battery_pub(nullptr),
 		_initialized(false)
 #ifndef __PX4_QURT
 		,
@@ -283,12 +279,8 @@ private:
 	orb_advert_t _gyro_pub;
 	orb_advert_t _mag_pub;
 	orb_advert_t _flow_pub;
-	orb_advert_t _battery_pub;
 
 	bool _initialized;
-
-	// Lib used to do the battery calculations.
-	Battery _battery;
 
 	// class methods
 	int publish_sensor_topics(mavlink_hil_sensor_t *imu);

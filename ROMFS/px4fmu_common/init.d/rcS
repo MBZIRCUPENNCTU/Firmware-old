@@ -15,6 +15,8 @@ sercon
 #
 set MODE autostart
 
+set FRC /fs/microsd/etc/rc.txt
+set FCONFIG /fs/microsd/etc/config.txt
 set TUNE_ERR ML<<CP4CP4CP4CP4CP4
 set LOG_FILE /fs/microsd/bootlog.txt
 
@@ -48,7 +50,6 @@ fi
 # Look for an init script on the microSD card.
 # Disable autostart if the script found.
 #
-set FRC /fs/microsd/etc/rc.txt
 if [ -f $FRC ]
 then
 	echo "[i] Executing script: $FRC"
@@ -85,6 +86,70 @@ then
 		fi
 	fi
 
+	# Compare existing params and save defaults
+	# this only needs to be in for 1-2 releases
+	if param compare RC_MAP_THROTTLE 0
+	then
+		# So this is a default setup,
+		# now lets find out if channel 3
+		# is calibrated
+		if param compare RC3_MIN 1000
+		then
+			# This is default, do nothing
+		else
+			# Set old default
+			param set RC_MAP_THROTTLE 3
+		fi
+	fi
+
+	# Compare existing params and save defaults
+	# this only needs to be in for 1-2 releases
+	if param compare RC_MAP_ROLL 0
+	then
+		# So this is a default setup,
+		# now lets find out if channel 1
+		# is calibrated
+		if param compare RC1_MIN 1000
+		then
+			# This is default, do nothing
+		else
+			# Set old default
+			param set RC_MAP_ROLL 1
+		fi
+	fi
+
+	# Compare existing params and save defaults
+	# this only needs to be in for 1-2 releases
+	if param compare RC_MAP_PITCH 0
+	then
+		# So this is a default setup,
+		# now lets find out if channel 2
+		# is calibrated
+		if param compare RC2_MIN 1000
+		then
+			# This is default, do nothing
+		else
+			# Set old default
+			param set RC_MAP_PITCH 2
+		fi
+	fi
+
+	# Compare existing params and save defaults
+	# this only needs to be in for 1-2 releases
+	if param compare RC_MAP_YAW 0
+	then
+		# So this is a default setup,
+		# now lets find out if channel 4
+		# is calibrated
+		if param compare RC4_MIN 1000
+		then
+			# This is default, do nothing
+		else
+			# Set old default
+			param set RC_MAP_YAW 4
+		fi
+	fi
+
 	#
 	# Start system state indicator
 	#
@@ -103,18 +168,6 @@ then
 	#fi
 
 	#
-	# Set AUTOCNF flag to use it in AUTOSTART scripts
-	#
-	if param compare SYS_AUTOCONFIG 1
-	then
-		# Wipe out params except RC*
-		param reset_nostart RC*
-		set AUTOCNF yes
-	else
-		set AUTOCNF no
-	fi
-
-	#
 	# Set default values
 	#
 	set HIL no
@@ -129,7 +182,6 @@ then
 	set PWM_MAX none
 	set PWM_AUX_OUT none
 	set PWM_AUX_RATE none
-	set PWM_ACHDIS none
 	set PWM_AUX_DISARMED none
 	set PWM_AUX_MIN none
 	set PWM_AUX_MAX none
@@ -140,8 +192,22 @@ then
 	set MAVLINK_F default
 	set EXIT_ON_END no
 	set MAV_TYPE none
+	set LOAD_DAPPS yes
+	set GPS yes
+	set GPS_FAKE no
 	set FAILSAFE none
-	set USE_IO yes
+
+	#
+	# Set AUTOCNF flag to use it in AUTOSTART scripts
+	#
+	if param compare SYS_AUTOCONFIG 1
+	then
+		# Wipe out params except RC*
+		param reset_nostart RC*
+		set AUTOCNF yes
+	else
+		set AUTOCNF no
+	fi
 
 	#
 	# Set USE_IO flag
@@ -151,24 +217,11 @@ then
 		if ver hwcmp PX4FMU_V4
 		then
 			set USE_IO no
-		fi
-
-		if ver hwcmp MINDPX_V2
-		then
-			set USE_IO no
+		else
+			set USE_IO yes
 		fi
 	else
 		set USE_IO no
-	fi
-
-	# should set to 0.8 for mindpx-v2 borad.
-	if param compare INAV_LIDAR_ERR 0.5
-	then
-		if ver hwcmp MINDPX_V2
-		then
-			param set INAV_LIDAR_ERR 0.8
-			param save
-		fi
 	fi
 
 	#
@@ -192,7 +245,6 @@ then
 	#
 	# Override parameters from user configuration file
 	#
-	set FCONFIG /fs/microsd/etc/config.txt
 	if [ -f $FCONFIG ]
 	then
 		echo "[i] Custom config: $FCONFIG"
@@ -308,15 +360,13 @@ then
 	if [ $HIL == yes ]
 	then
 		set OUTPUT_MODE hil
+		set GPS no
 		if ver hwcmp PX4FMU_V1
 		then
 			set FMU_MODE serial
 		fi
-		unset HIL
-	else
-		unset HIL
-		gps start
 	fi
+	unset HIL
 
 	# waypoint storage
 	# REBOOTWORK this needs to start in parallel
@@ -328,14 +378,22 @@ then
 	# Sensors System (start before Commander so Preflight checks are properly run)
 	#
 	sh /etc/init.d/rc.sensors
+	
+	if [ $GPS == yes ]
+	then
+		if [ $GPS_FAKE == yes ]
+		then
+			echo "[i] Faking GPS"
+			gps start -f
+		else
+			gps start
+		fi
+	fi
+	unset GPS
+	unset GPS_FAKE
 
 	# Needs to be this early for in-air-restarts
-	if [ $OUTPUT_MODE == hil ]
-	then
-	    commander start -hil
-	else
-	    commander start
-	fi
+	commander start
 
 	#
 	# Start primary output
@@ -502,12 +560,17 @@ then
 	mavlink start $MAVLINK_F
 	unset MAVLINK_F
 
+	if ver hwcmp PX4FMU_V4
+	then
+		# Start MAVLink on OSD (TELEM2 port)
+		mavlink start -r 1200 -d /dev/ttyS2 -b 57600 -m osd
+	fi
+
 	#
 	# MAVLink onboard / TELEM2
 	#
-	if ver hwcmp PX4FMU_V1
+	if ver hwcmp PX4FMU_V2
 	then
-	else
 		# XXX We need a better way for runtime eval of shell variables,
 		# but this works for now
 		if param compare SYS_COMPANION 921600
@@ -526,10 +589,6 @@ then
 		then
 			mavlink start -d /dev/ttyS2 -b 57600 -m magic -r 5000 -x
 		fi
-		if param compare SYS_COMPANION 357600
-		then
-			mavlink start -d /dev/ttyS2 -b 57600 -r 1000
-		fi
 		# Sensors on the PWM interface bank
 		# clear pins 5 and 6
 		if param compare SENS_EN_LL40LS 1
@@ -545,82 +604,10 @@ then
 		fi
 	fi
 
-	# Transitional support: Disable safety on all Pixracer boards
-	if ver hwcmp PX4FMU_V4
-	then
-		if param set CBRK_IO_SAFETY 22027
-		then
-		fi
-	fi
-
 	#
-	# Starting stuff according to UAVCAN_ENABLE value
+	# UAVCAN
 	#
-	if param greater UAVCAN_ENABLE 0
-	then
-		if uavcan start
-		then
-		else
-			tone_alarm $TUNE_ERR
-		fi
-	fi
-
-	if param greater UAVCAN_ENABLE 1
-	then
-		if uavcan start fw
-		then
-		else
-			tone_alarm $TUNE_ERR
-		fi
-	fi
-
-	#
-	# Optional drivers
-	#
-
-	# Sensors on the PWM interface bank
-	if param compare SENS_EN_LL40LS 1
-	then
-		if pwm_input start
-		then
-			if ll40ls start pwm
-			then
-			fi
-		fi
-	fi
-
-	# sf0x lidar sensor
-	if param compare SENS_EN_SF0X 1
-	then
-		sf0x start
-	fi
-
-	if ver hwcmp PX4FMU_V4
-	then
-		frsky_telemetry start -d /dev/ttyS6
-	fi
-
-	if ver hwcmp PX4FMU_V2
-	then
-		# Check for flow sensor - as it is a background task, launch it last
-		px4flow start &
-	fi
-
-	if ver hwcmp MINDPX_V2
-	then
-		#mindxp also need flow
-		px4flow start &
-	fi
-
-	# Start USB shell if no microSD present, MAVLink else
-	if [ $LOG_FILE == /dev/null ]
-	then
-		# Try to get an USB console
-		nshterm /dev/ttyACM0 &
-	else
-		mavlink start -r 800000 -d /dev/ttyACM0 -m config -x
-	fi
-
+	sh /etc/init.d/rc.uavcan
 
 	#
 	# Logging
@@ -660,7 +647,10 @@ then
 		sh /etc/init.d/rc.interface
 
 		# Start standard fixedwing apps
-		sh /etc/init.d/rc.fw_apps
+		if [ $LOAD_DAPPS == yes ]
+		then
+			sh /etc/init.d/rc.fw_apps
+		fi
 	fi
 
 	#
@@ -683,10 +673,6 @@ then
 				set MAV_TYPE 2
 			fi
 			if [ $MIXER == quad_w -o $MIXER == sk450_deadcat ]
-			then
-				set MAV_TYPE 2
-			fi
-			if [ $MIXER == quad_h ]
 			then
 				set MAV_TYPE 2
 			fi
@@ -725,7 +711,10 @@ then
 		sh /etc/init.d/rc.interface
 
 		# Start standard multicopter apps
-		sh /etc/init.d/rc.mc_apps
+		if [ $LOAD_DAPPS == yes ]
+		then
+			sh /etc/init.d/rc.mc_apps
+		fi
 	fi
 
 	#
@@ -770,7 +759,10 @@ then
 		sh /etc/init.d/rc.interface
 
 		# Start standard vtol apps
-		sh /etc/init.d/rc.vtol_apps
+		if [ $LOAD_DAPPS == yes ]
+		then
+			sh /etc/init.d/rc.vtol_apps
+		fi
 	fi
 
 	#
@@ -785,45 +777,12 @@ then
 		sh /etc/init.d/rc.interface
 
 		# Start standard rover apps
-		sh /etc/init.d/rc.axialracing_ax10_apps
+		if [ $LOAD_DAPPS == yes ]
+		then
+			sh /etc/init.d/rc.axialracing_ax10_apps
+		fi
 
 		param set MAV_TYPE 10
-	fi
-
-	#
-	# For snapdragon, we need a passthrough mode
-	# Do not run any mavlink instances since we need the serial port for
-	# communication with Snapdragon.
-	#
-	if [ $VEHICLE_TYPE == passthrough ]
-	then
-		mavlink stop-all
-
-		# Stop multicopter attitude controller if it is running, the controls come
-		# from Snapdragon.
-		if mc_att_control stop
-		then
-		fi
-
-		# Start snapdragon interface on serial port.
-		if ver hwcmp PX4FMU_V2
-		then
-			# On Pixfalcon use the standard telemetry port (Telem 1).
-			snapdragon_rc_pwm start -d /dev/ttyS1
-			px4io start
-		fi
-
-		if ver hwcmp PX4FMU_V4
-		then
-			# On Pixracer use Telem 2 port (TL2).
-			snapdragon_rc_pwm start -d /dev/ttyS2
-			fmu mode_pwm4
-		fi
-
-		# Arm straightaway.
-		pwm arm
-		# Use 400 Hz PWM on all channels.
-		pwm rate -a -r 400
 	fi
 
 	unset MIXER
@@ -870,6 +829,37 @@ unset TUNE_ERR
 
 # Boot is complete, inform MAVLink app(s) that the system is now fully up and running
 mavlink boot_complete
+
+# Sensors on the PWM interface bank
+if param compare SENS_EN_LL40LS 1
+then
+	if pwm_input start
+	then
+		if ll40ls start pwm
+		then
+		fi
+	fi
+fi
+
+if ver hwcmp PX4FMU_V4
+then
+	frsky_telemetry start -d /dev/ttyS6
+fi
+
+if ver hwcmp PX4FMU_V2
+then
+	# Check for flow sensor - as it is a background task, launch it last
+	px4flow start &
+fi
+
+# Start USB shell if no microSD present, MAVLink else
+if [ $LOG_FILE == /dev/null ]
+then
+	# Try to get an USB console
+	nshterm /dev/ttyACM0 &
+else
+	mavlink start -r 800000 -d /dev/ttyACM0 -m config -x
+fi
 
 if [ $EXIT_ON_END == yes ]
 then

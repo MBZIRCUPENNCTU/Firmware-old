@@ -561,7 +561,7 @@ info()
 static void
 meas_airspeed_usage()
 {
-	PX4_WARN("usage: measairspeedsim command [options]");
+	PX4_WARN("usage: meas_airspeed_sim command [options]");
 	PX4_WARN("options:");
 	PX4_WARN("\t-b --bus i2cbus (%d)", 1);
 	PX4_WARN("command:");
@@ -583,41 +583,41 @@ measairspeedsim_main(int argc, char *argv[])
 		}
 	}
 
-	int ret = 1;
+	int ret = 0;
 
 	/*
 	 * Start/load the driver.
 	 */
 	if (!strcmp(argv[1], "start")) {
-		return meas_airspeed_sim::start(i2c_bus);
+		ret = meas_airspeed_sim::start(i2c_bus);
 	}
 
 	/*
 	 * Stop the driver
 	 */
 	if (!strcmp(argv[1], "stop")) {
-		return meas_airspeed_sim::stop();
+		ret = meas_airspeed_sim::stop();
 	}
 
 	/*
 	 * Test the driver/device.
 	 */
 	if (!strcmp(argv[1], "test")) {
-		return meas_airspeed_sim::test();
+		ret = meas_airspeed_sim::test();
 	}
 
 	/*
 	 * Reset the driver.
 	 */
 	if (!strcmp(argv[1], "reset")) {
-		return meas_airspeed_sim::reset();
+		ret = meas_airspeed_sim::reset();
 	}
 
 	/*
 	 * Print driver information.
 	 */
 	if (!strcmp(argv[1], "info") || !strcmp(argv[1], "status")) {
-		return meas_airspeed_sim::info();
+		ret = meas_airspeed_sim::info();
 	}
 
 	meas_airspeed_usage();

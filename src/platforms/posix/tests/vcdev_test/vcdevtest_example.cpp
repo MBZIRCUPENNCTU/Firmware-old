@@ -334,22 +334,6 @@ int VCDevExample::main()
 	if (do_poll(fd, 0, 3, 0)) {
 		ret = 1;
 		goto fail2;
-		goto fail2;
-	}
-
-	PX4_INFO("TEST: ZERO TIMEOUT POLL -----------");
-
-	if (do_poll(fd, 0, 3, 0)) {
-		ret = 1;
-		goto fail2;
-		goto fail2;
-	}
-
-	PX4_INFO("TEST: ZERO TIMEOUT POLL -----------");
-
-	if (do_poll(fd, 0, 3, 0)) {
-		ret = 1;
-		goto fail2;
 	}
 
 	PX4_INFO("TEST: 100ms TIMEOUT POLL -----------");
@@ -366,7 +350,6 @@ int VCDevExample::main()
 		goto fail2;
 	}
 
-	PX4_INFO("TEST: waiting for writer to stop");
 fail2:
 	g_exit = true;
 	px4_close(fd);

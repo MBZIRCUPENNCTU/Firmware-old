@@ -40,8 +40,7 @@
 #define RC_CALIBRATION_H_
 
 #include <stdint.h>
-#include <uORB/uORB.h>
 
-int do_trim_calibration(orb_advert_t *mavlink_log_pub);
+int do_trim_calibration(int mavlink_fd);
 
 #endif /* RC_CALIBRATION_H_ */

@@ -36,6 +36,7 @@ include_directories(${CMAKE_BINARY_DIR}/src/modules/param)
 
 set(SRCS
 	perf_counter.c
+	param/param.c
 	conversions.c
 	cpuload.c
 	pid/pid.c
@@ -48,26 +49,18 @@ set(SRCS
 	mcu_version.c
 	bson/tinybson.c
 	circuit_breaker.cpp
-	battery.cpp
 	)
 
 if(${OS} STREQUAL "nuttx")
 	list(APPEND SRCS
 		err.c
 		printload.c
-		param/param.c
-		up_cxxinitialize.c
-		)
-elseif ("${CONFIG_SHMEM}" STREQUAL "1")
-	list(APPEND SRCS
-		param/param_shmem.c
-		print_load_posix.c
+		up_cxxinitialize.c 
 		)
 else()
 	list(APPEND SRCS
-		param/param.c
 		print_load_posix.c
-		)
+		)	
 endif()
 
 if(NOT ${OS} STREQUAL "qurt")
@@ -86,4 +79,4 @@ px4_add_module(
 		platforms__common
 		modules__param
 	)
-# vim: set noet ft=cmake fenc=utf-8 ff=unix :
+# vim: set noet ft=cmake fenc=utf-8 ff=unix : 

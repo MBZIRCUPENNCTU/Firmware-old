@@ -49,7 +49,7 @@
  * The amount of time in seconds the system should do open loop loiter and wait for gps recovery
  * before it goes into flight termination.
  *
- * @unit s
+ * @unit seconds
  * @min 0.0
  * @group GPS Failure Navigation
  */
@@ -89,3 +89,5 @@ PARAM_DEFINE_FLOAT(NAV_GPSF_P, 0.0f);
  * @group GPS Failure Navigation
  */
 PARAM_DEFINE_FLOAT(NAV_GPSF_TR, 0.7f);
+
+

@@ -44,7 +44,8 @@
  *
  * 0: disabled, 1: enabled
  *
- * @boolean
+ * @min 0
+ * @max 1
  * @group Runway Takeoff
  */
 PARAM_DEFINE_INT32(RWTO_TKOFF, 0);
@@ -54,8 +55,6 @@ PARAM_DEFINE_INT32(RWTO_TKOFF, 0);
  *
  * 0: airframe heading, 1: heading towards takeoff waypoint
  *
- * @value 0 Airframe
- * @value 1 Waypoint
  * @min 0
  * @max 1
  * @group Runway Takeoff

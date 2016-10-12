@@ -45,7 +45,7 @@
  *
  * Default value of loiter radius for missions, loiter, RTL, etc. (fixedwing only).
  *
- * @unit m
+ * @unit meter
  * @min 25
  * @max 1000
  * @group Mission
@@ -57,7 +57,7 @@ PARAM_DEFINE_FLOAT(NAV_LOITER_RAD, 50.0f);
  *
  * Default acceptance radius, overridden by acceptance radius of waypoint if set.
  *
- * @unit m
+ * @unit meter
  * @min 0.05
  * @max 200.0
  * @group Mission
@@ -67,9 +67,10 @@ PARAM_DEFINE_FLOAT(NAV_ACC_RAD, 10.0f);
 /**
  * Set OBC mode for data link loss
  *
- * If set to 1 the behaviour on data link loss is set to a mode according to the Outback Challenge (OBC) rules
+ * If set to 1 the behaviour on data link loss is set to a mode according to the OBC rules
  *
- * @boolean
+ * @min 0
+ * @max 1
  * @group Mission
  */
 PARAM_DEFINE_INT32(NAV_DLL_OBC, 0);
@@ -77,9 +78,10 @@ PARAM_DEFINE_INT32(NAV_DLL_OBC, 0);
 /**
  * Set OBC mode for rc loss
  *
- * If set to 1 the behaviour on data link loss is set to a mode according to the Outback Challenge (OBC) rules
+ * If set to 1 the behaviour on data link loss is set to a mode according to the OBC rules
  *
- * @boolean
+ * @min 0
+ * @max 1
  * @group Mission
  */
 PARAM_DEFINE_INT32(NAV_RCL_OBC, 0);
@@ -89,7 +91,7 @@ PARAM_DEFINE_INT32(NAV_RCL_OBC, 0);
  *
  * Latitude of airfield home waypoint
  *
- * @unit deg * 1e7
+ * @unit degrees * 1e7
  * @min -900000000
  * @max 900000000
  * @group Data Link Loss
@@ -101,7 +103,7 @@ PARAM_DEFINE_INT32(NAV_AH_LAT, -265847810);
  *
  * Longitude of airfield home waypoint
  *
- * @unit deg * 1e7
+ * @unit degrees * 1e7
  * @min -1800000000
  * @max 1800000000
  * @group Data Link Loss

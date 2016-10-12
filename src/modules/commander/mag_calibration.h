@@ -40,8 +40,7 @@
 #define MAG_CALIBRATION_H_
 
 #include <stdint.h>
-#include <uORB/uORB.h>
 
-int do_mag_calibration(orb_advert_t *mavlink_log_pub);
+int do_mag_calibration(int mavlink_fd);
 
 #endif /* MAG_CALIBRATION_H_ */

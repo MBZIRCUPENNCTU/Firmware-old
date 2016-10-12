@@ -45,9 +45,6 @@
 #include <px4_config.h>
 #include <px4_defines.h>
 
-namespace landdetection
-{
-
 LandDetector::LandDetector() :
 	_landDetectedPub(0),
 	_landDetected( {0, false}),
@@ -91,7 +88,6 @@ void LandDetector::cycle()
 		// advertise the first land detected uORB
 		_landDetected.timestamp = hrt_absolute_time();
 		_landDetected.landed = false;
-		_landDetected.freefall = false;
 		_landDetectedPub = orb_advertise(ORB_ID(vehicle_land_detected), &_landDetected);
 
 		// initialize land detection algorithm
@@ -102,15 +98,12 @@ void LandDetector::cycle()
 		_taskShouldExit = false;
 	}
 
-	LandDetectionResult current_state = update();
-	bool landDetected = (current_state == LANDDETECTION_RES_LANDED);
-	bool freefallDetected = (current_state == LANDDETECTION_RES_FREEFALL);
+	bool landDetected = update();
 
 	// publish if land detection state has changed
-	if ((_landDetected.landed != landDetected) || (_landDetected.freefall != freefallDetected)) {
+	if (_landDetected.landed != landDetected) {
 		_landDetected.timestamp = hrt_absolute_time();
 		_landDetected.landed = landDetected;
-		_landDetected.freefall = freefallDetected;
 
 		// publish the land detected broadcast
 		orb_publish(ORB_ID(vehicle_land_detected), (orb_advert_t)_landDetectedPub, &_landDetected);
@@ -141,6 +134,4 @@ bool LandDetector::orb_update(const struct orb_metadata *meta, int handle, void 
 	}
 
 	return true;
-}
-
 }

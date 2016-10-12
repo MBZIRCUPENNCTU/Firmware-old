@@ -71,7 +71,6 @@ unsigned int sleep(unsigned int sec)
 }
 
 extern void hrt_init(void);
-extern void init_params();
 
 #if 0
 void qurt_log(const char *fmt, ...)
@@ -109,9 +108,6 @@ void init_once(void)
 	hrt_work_queue_init();
 	hrt_init();
 	PX4_WARN("after calling hrt_init");
-
-	/* Shared memory param sync*/
-	init_params();
 }
 
 void init(int argc, char *argv[], const char *app_name)
@@ -157,13 +153,12 @@ size_t strnlen(const char *s, size_t maxlen)
 	return i;
 }
 
-int fprintf(FILE *stream, const char *format, ...)
+int ioctl(int a, int b, unsigned long c)
 {
-	PX4_ERR("Error: Calling unresolved symbol stub:[%s(%s,...)]", __FUNCTION__, format);
-	return 0;
+	return -1;
 }
 
-int fputc(int c, FILE *stream)
+int write(int a, char const *b, int c)
 {
-	return c;
+	return -1;
 }

@@ -287,7 +287,6 @@ uORB::DeviceNode::ioctl(device::file_t *filp, int cmd, unsigned long arg)
 
 	case ORBIOCSETINTERVAL:
 		sd->update_interval = arg;
-		sd->last_update = hrt_absolute_time();
 		return PX4_OK;
 
 	case ORBIOCGADVERTISER:
@@ -427,17 +426,31 @@ uORB::DeviceNode::appears_updated(SubscriberData *sd)
 			break;
 		}
 
-		// If we have not yet reached the deadline, then assume that we can ignore any
-		// newly received data.
-		if (sd->last_update + sd->update_interval > hrt_absolute_time()) {
+		/*
+		 * If the interval timer is still running, the topic should not
+		 * appear updated, even though at this point we know that it has.
+		 * We have previously been through here, so the subscriber
+		 * must have collected the update we reported, otherwise
+		 * update_reported would still be true.
+		 */
+		if (!hrt_called(&sd->update_call)) {
 			break;
 		}
+
+		/*
+		 * Make sure that we don't consider the topic to be updated again
+		 * until the interval has passed once more by restarting the interval
+		 * timer and thereby re-scheduling a poll notification at that time.
+		 */
+		hrt_call_after(&sd->update_call,
+			       sd->update_interval,
+			       &uORB::DeviceNode::update_deferred_trampoline,
+			       (void *)this);
 
 		/*
 		 * Remember that we have told the subscriber that there is data.
 		 */
 		sd->update_reported = true;
-		sd->last_update = hrt_absolute_time();
 		ret = true;
 
 		break;
@@ -577,6 +590,11 @@ uORB::DeviceMaster::ioctl(device::file_t *filp, int cmd, unsigned long arg)
 			char nodepath[orb_maxpath];
 			uORB::DeviceNode *node;
 
+			/* set instance to zero - we could allow selective multi-pubs later based on value */
+			if (adv->instance != nullptr) {
+				*(adv->instance) = 0;
+			}
+
 			/* construct a path to the node - this also checks the node name */
 			ret = uORB::Utils::node_mkpath(nodepath, _flavor, meta, adv->instance);
 
@@ -593,18 +611,6 @@ uORB::DeviceMaster::ioctl(device::file_t *filp, int cmd, unsigned long arg)
 			const unsigned max_group_tries = (adv->instance != nullptr) ? ORB_MULTI_MAX_INSTANCES : 1;
 			unsigned group_tries = 0;
 
-			if (adv->instance) {
-				/* for an advertiser, this will be 0, but a for subscriber that requests a certain instance,
-				 * we do not want to start with 0, but with the instance the subscriber actually requests.
-				 */
-				group_tries = *adv->instance;
-
-				if (group_tries >= max_group_tries) {
-					unlock();
-					return -ENOMEM;
-				}
-			}
-
 			do {
 				/* if path is modifyable change try index */
 				if (adv->instance != nullptr) {
@@ -617,7 +623,6 @@ uORB::DeviceMaster::ioctl(device::file_t *filp, int cmd, unsigned long arg)
 				objname = strdup(meta->o_name);
 
 				if (objname == nullptr) {
-					unlock();
 					return -ENOMEM;
 				}
 
@@ -625,8 +630,7 @@ uORB::DeviceMaster::ioctl(device::file_t *filp, int cmd, unsigned long arg)
 				devpath = strdup(nodepath);
 
 				if (devpath == nullptr) {
-					unlock();
-					free((void *)objname);
+					// FIXME - looks like we leaked memory here for objname
 					return -ENOMEM;
 				}
 
@@ -636,8 +640,8 @@ uORB::DeviceMaster::ioctl(device::file_t *filp, int cmd, unsigned long arg)
 				/* if we didn't get a device, that's bad */
 				if (node == nullptr) {
 					unlock();
-					free((void *)objname);
-					free((void *)devpath);
+
+					// FIXME - looks like we leaked memory here for devpath and objname
 					return -ENOMEM;
 				}
 
@@ -676,7 +680,7 @@ uORB::DeviceMaster::ioctl(device::file_t *filp, int cmd, unsigned long arg)
 
 			} while (ret != PX4_OK && (group_tries < max_group_tries));
 
-			if (ret != PX4_OK && group_tries >= max_group_tries) {
+			if (group_tries > max_group_tries) {
 				ret = -ENOMEM;
 			}
 
@@ -697,10 +701,8 @@ uORB::DeviceNode *uORB::DeviceMaster::GetDeviceNode(const char *nodepath)
 	uORB::DeviceNode *rc = nullptr;
 	std::string np(nodepath);
 
-	auto iter = _node_map.find(np);
-
-	if (iter != _node_map.end()) {
-		rc = iter->second;
+	if (_node_map.find(np) != _node_map.end()) {
+		rc = _node_map[np];
 	}
 
 	return rc;

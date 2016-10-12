@@ -32,7 +32,7 @@ set(config_module_list
 	modules/dataman
 	modules/sdlog2
 	modules/commander
-	lib/controllib
+	modules/controllib
 	lib/mathlib
 	lib/mathlib/math/filter
 	lib/conversion

@@ -172,8 +172,6 @@ public:
 		     int instance = 0,
 		     List<SubscriptionNode *> *list = nullptr);
 
-	Subscription(const Subscription &);
-
 	/**
 	 * Deconstructor
 	 */

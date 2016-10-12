@@ -33,7 +33,7 @@
 
 #pragma once
 
-#include <px4_tasks.h>
+#include <nuttx/sched.h>
 
 /*      SCHED_PRIORITY_MAX    */
 #define SCHED_PRIORITY_FAST_DRIVER           SCHED_PRIORITY_MAX

@@ -65,6 +65,6 @@ private:
 		MagCbBinder;
 
 	uavcan::Subscriber<uavcan::equipment::ahrs::MagneticFieldStrength, MagCbBinder> _sub_mag;
-	struct mag_calibration_s _scale = {};
+	mag_scale _scale = {};
 	mag_report _report =  {};
 };

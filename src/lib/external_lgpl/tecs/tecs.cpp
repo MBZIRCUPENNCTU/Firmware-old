@@ -512,7 +512,6 @@ void TECS::_initialise_states(float pitch, float throttle_cruise, float baro_alt
 		_hgt_dem_in_old = _hgt_dem_adj_last;
 		_TAS_dem_last = _TAS_dem;
 		_TAS_dem_adj = _TAS_dem;
-		_pitch_dem_unc = pitch;
 		_underspeed = false;
 		_badDescent = false;
 
@@ -538,7 +537,7 @@ void TECS::_initialise_states(float pitch, float throttle_cruise, float baro_alt
 void TECS::_update_STE_rate_lim(void)
 {
 	// Calculate Specific Total Energy Rate Limits
-	// This is a trivial calculation at the moment but will get bigger once we start adding altitude effects
+	// This is a tivial calculation at the moment but will get bigger once we start adding altitude effects
 	_STEdot_max = _maxClimbRate * CONSTANTS_ONE_G;
 	_STEdot_min = - _minSinkRate * CONSTANTS_ONE_G;
 }

@@ -48,9 +48,7 @@
 #include <uORB/topics/mission.h>
 #include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/position_setpoint_triplet.h>
-#include <uORB/topics/vtol_vehicle_status.h>
 #include <uORB/topics/actuator_controls.h>
-#include <uORB/topics/follow_target.h>
 
 #include "navigator_mode.h"
 
@@ -69,9 +67,6 @@ public:
 	 */
 	virtual ~MissionBlock();
 
-	/* TODO: move this to a helper class in navigator */
-	static bool item_contains_position(const struct mission_item_s *item);
-
 protected:
 	/**
 	 * Check if mission item has been reached
@@ -82,6 +77,8 @@ protected:
 	 * Reset all reached flags
 	 */
 	void reset_mission_item_reached();
+
+	bool item_contains_position(const struct mission_item_s *item);
 
 	/**
 	 * Convert a mission item to a position setpoint
@@ -111,8 +108,6 @@ protected:
 	 */
 	void set_land_item(struct mission_item_s *item, bool at_current_location);
 
-	void set_current_position_item(struct mission_item_s *item);
-
 	/**
 	 * Set idle mission item
 	 */
@@ -123,11 +118,6 @@ protected:
 	 */
 	void mission_item_to_vehicle_command(const struct mission_item_s *item, struct vehicle_command_s *cmd);
 
-	/**
-	 * Set follow_target item
-	 */
-	void set_follow_target_item(struct mission_item_s *item, float min_clearance, follow_target_s & target, float yaw);
-
 	void issue_command(const struct mission_item_s *item);
 
 	mission_item_s _mission_item;
@@ -135,16 +125,10 @@ protected:
 	bool _waypoint_yaw_reached;
 	hrt_abstime _time_first_inside_orbit;
 	hrt_abstime _action_start;
-	hrt_abstime _time_wp_reached;
 
 	actuator_controls_s _actuators;
 	orb_advert_t    _actuator_pub;
 	orb_advert_t	_cmd_pub;
-
-	control::BlockParamFloat _param_yaw_timeout;
-	control::BlockParamFloat _param_yaw_err;
-	control::BlockParamInt _param_vtol_wv_land;
-	control::BlockParamInt _param_vtol_wv_loiter;
 };
 
 #endif

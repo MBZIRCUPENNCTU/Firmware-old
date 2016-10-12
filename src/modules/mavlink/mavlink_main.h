@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2012-2016 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2012-2014 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -53,8 +53,7 @@
 #include <systemlib/param/param.h>
 #include <systemlib/perf_counter.h>
 #include <pthread.h>
-#include <systemlib/mavlink_log.h>
-#include <drivers/device/ringbuffer.h>
+#include <mavlink/mavlink_log.h>
 
 #include <uORB/uORB.h>
 #include <uORB/topics/mission.h>
@@ -76,7 +75,11 @@ enum Protocol {
 	TCP,
 };
 
+#ifdef __PX4_NUTTX
 class Mavlink
+#else
+class Mavlink : public device::VDev
+#endif
 {
 
 public:
@@ -248,7 +251,7 @@ public:
 
 	bool			_task_should_exit;	/**< if true, mavlink task should exit */
 
-	orb_advert_t		*get_mavlink_log_pub() { return &_mavlink_log_pub; }
+	int			get_mavlink_fd() { return _mavlink_fd; }
 
 	/**
 	 * Send a status text with loglevel INFO
@@ -326,7 +329,7 @@ public:
 	 */
 	struct telemetry_status_s&	get_rx_status() { return _rstatus; }
 
-	ringbuffer::RingBuffer	*get_logbuffer() { return &_logbuffer; }
+	struct mavlink_logbuffer	*get_logbuffer() { return &_logbuffer; }
 
 	unsigned		get_system_type() { return _system_type; }
 
@@ -359,7 +362,7 @@ protected:
 private:
 	int			_instance_id;
 
-	orb_advert_t		_mavlink_log_pub;
+	int			_mavlink_fd;
 	bool			_task_running;
 	static bool		_boot_complete;
 
@@ -387,7 +390,7 @@ private:
 	mavlink_channel_t	_channel;
 	int32_t			_radio_id;
 
-	ringbuffer::RingBuffer		_logbuffer;
+	struct mavlink_logbuffer _logbuffer;
 	unsigned int		_total_counter;
 
 	pthread_t		_receive_thread;
@@ -435,7 +438,6 @@ private:
 	struct sockaddr_in _src_addr;
 	struct sockaddr_in _bcast_addr;
 	bool _src_addr_initialized;
-	bool _broadcast_address_found;
 
 #endif
 	int _socket_fd;
@@ -510,9 +512,13 @@ private:
 	 */
 	void update_rate_mult();
 
-	void find_broadcast_address();
-
 	void init_udp();
+
+#ifdef __PX4_NUTTX
+	static int	mavlink_dev_ioctl(struct file *filep, int cmd, unsigned long arg);
+#else
+	virtual int	ioctl(device::file_t *filp, int cmd, unsigned long arg);
+#endif
 
 	/**
 	 * Main mavlink task.

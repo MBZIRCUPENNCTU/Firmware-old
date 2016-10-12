@@ -107,7 +107,8 @@ load(const char *devname, const char *fname)
 	// sleep a while to ensure device has been set up
 	usleep(20000);
 
-	int dev;
+	int		dev;
+	char		buf[2048];
 
 	/* open the device */
 	if ((dev = px4_open(devname, 0)) < 0) {
@@ -121,14 +122,12 @@ load(const char *devname, const char *fname)
 		return 1;
 	}
 
-	char buf[2048];
-
 	if (load_mixer_file(fname, &buf[0], sizeof(buf)) < 0) {
 		warnx("can't load mixer: %s", fname);
 		return 1;
 	}
 
-	/* Pass the buffer to the device */
+	/* XXX pass the buffer to the device */
 	int ret = px4_ioctl(dev, MIXERIOCLOADBUF, (unsigned long)buf);
 
 	if (ret < 0) {

@@ -54,7 +54,6 @@
 #include <systemlib/err.h>
 #include <systemlib/param/param.h>
 #include <systemlib/rc_check.h>
-#include <systemlib/mavlink_log.h>
 
 #include <drivers/drv_hrt.h>
 #include <drivers/drv_mag.h>
@@ -66,6 +65,7 @@
 #include <uORB/topics/airspeed.h>
 #include <uORB/topics/vehicle_gps_position.h>
 
+#include <mavlink/mavlink_log.h>
 
 #include "PreflightCheck.h"
 
@@ -84,7 +84,7 @@ static int check_calibration(DevHandle &h, const char* param_template, int &devi
 	int ret = h.ioctl(SENSORIOCCALTEST, 0);
 
 	calibration_found = (ret == OK);
-
+	
 	devid = h.ioctl(DEVIOCGDEVICEID, 0);
 
 	char s[20];
@@ -116,7 +116,7 @@ static int check_calibration(DevHandle &h, const char* param_template, int &devi
 	return !calibration_found;
 }
 
-static bool magnometerCheck(orb_advert_t *mavlink_log_pub, unsigned instance, bool optional, int &device_id, bool report_fail)
+static bool magnometerCheck(int mavlink_fd, unsigned instance, bool optional, int &device_id, bool report_fail)
 {
 	bool success = true;
 
@@ -128,7 +128,8 @@ static bool magnometerCheck(orb_advert_t *mavlink_log_pub, unsigned instance, bo
 	if (!h.isValid()) {
 		if (!optional) {
 			if (report_fail) {
-				mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: NO MAG SENSOR #%u", instance);
+				mavlink_and_console_log_critical(mavlink_fd,
+							 "PREFLIGHT FAIL: NO MAG SENSOR #%u", instance);
 			}
 		}
 
@@ -139,7 +140,8 @@ static bool magnometerCheck(orb_advert_t *mavlink_log_pub, unsigned instance, bo
 
 	if (ret) {
 		if (report_fail) {
-			mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: MAG #%u UNCALIBRATED", instance);
+			mavlink_and_console_log_critical(mavlink_fd,
+						 "PREFLIGHT FAIL: MAG #%u UNCALIBRATED", instance);
 		}
 		success = false;
 		goto out;
@@ -149,7 +151,8 @@ static bool magnometerCheck(orb_advert_t *mavlink_log_pub, unsigned instance, bo
 
 	if (ret != OK) {
 		if (report_fail) {
-			mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: MAG #%u SELFTEST FAILED", instance);
+			mavlink_and_console_log_critical(mavlink_fd,
+						 "PREFLIGHT FAIL: MAG #%u SELFTEST FAILED", instance);
 		}
 		success = false;
 		goto out;
@@ -160,7 +163,7 @@ out:
 	return success;
 }
 
-static bool accelerometerCheck(orb_advert_t *mavlink_log_pub, unsigned instance, bool optional, bool dynamic, int &device_id, bool report_fail)
+static bool accelerometerCheck(int mavlink_fd, unsigned instance, bool optional, bool dynamic, int &device_id, bool report_fail)
 {
 	bool success = true;
 
@@ -172,7 +175,8 @@ static bool accelerometerCheck(orb_advert_t *mavlink_log_pub, unsigned instance,
 	if (!h.isValid()) {
 		if (!optional) {
 			if (report_fail) {
-				mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: NO ACCEL SENSOR #%u", instance);
+				mavlink_and_console_log_critical(mavlink_fd,
+							 "PREFLIGHT FAIL: NO ACCEL SENSOR #%u", instance);
 			}
 		}
 
@@ -183,7 +187,8 @@ static bool accelerometerCheck(orb_advert_t *mavlink_log_pub, unsigned instance,
 
 	if (ret) {
 		if (report_fail) {
-			mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: ACCEL #%u UNCALIBRATED", instance);
+			mavlink_and_console_log_critical(mavlink_fd,
+						 "PREFLIGHT FAIL: ACCEL #%u UNCALIBRATED", instance);
 		}
 		success = false;
 		goto out;
@@ -193,7 +198,8 @@ static bool accelerometerCheck(orb_advert_t *mavlink_log_pub, unsigned instance,
 
 	if (ret != OK) {
 		if (report_fail) {
-			mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: ACCEL #%u TEST FAILED: %d", instance, ret);
+			mavlink_and_console_log_critical(mavlink_fd,
+						 "PREFLIGHT FAIL: ACCEL #%u TEST FAILED: %d", instance, ret);
 		}
 		success = false;
 		goto out;
@@ -211,7 +217,7 @@ static bool accelerometerCheck(orb_advert_t *mavlink_log_pub, unsigned instance,
 
 			if (accel_magnitude < 4.0f || accel_magnitude > 15.0f /* m/s^2 */) {
 				if (report_fail) {
-					mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: ACCEL RANGE, hold still on arming");
+					mavlink_and_console_log_critical(mavlink_fd, "PREFLIGHT FAIL: ACCEL RANGE, hold still on arming");
 				}
 				/* this is frickin' fatal */
 				success = false;
@@ -219,7 +225,7 @@ static bool accelerometerCheck(orb_advert_t *mavlink_log_pub, unsigned instance,
 			}
 		} else {
 			if (report_fail) {
-				mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: ACCEL READ");
+				mavlink_and_console_log_critical(mavlink_fd, "PREFLIGHT FAIL: ACCEL READ");
 			}
 			/* this is frickin' fatal */
 			success = false;
@@ -233,7 +239,7 @@ out:
 	return success;
 }
 
-static bool gyroCheck(orb_advert_t *mavlink_log_pub, unsigned instance, bool optional, int &device_id, bool report_fail)
+static bool gyroCheck(int mavlink_fd, unsigned instance, bool optional, int &device_id, bool report_fail)
 {
 	bool success = true;
 
@@ -245,7 +251,8 @@ static bool gyroCheck(orb_advert_t *mavlink_log_pub, unsigned instance, bool opt
 	if (!h.isValid()) {
 		if (!optional) {
 			if (report_fail) {
-				mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: NO GYRO SENSOR #%u", instance);
+				mavlink_and_console_log_critical(mavlink_fd,
+							 "PREFLIGHT FAIL: NO GYRO SENSOR #%u", instance);
 			}
 		}
 
@@ -256,7 +263,8 @@ static bool gyroCheck(orb_advert_t *mavlink_log_pub, unsigned instance, bool opt
 
 	if (ret) {
 		if (report_fail) {
-			mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: GYRO #%u UNCALIBRATED", instance);
+			mavlink_and_console_log_critical(mavlink_fd,
+						 "PREFLIGHT FAIL: GYRO #%u UNCALIBRATED", instance);
 		}
 		success = false;
 		goto out;
@@ -266,7 +274,8 @@ static bool gyroCheck(orb_advert_t *mavlink_log_pub, unsigned instance, bool opt
 
 	if (ret != OK) {
 		if (report_fail) {
-			mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: GYRO #%u SELFTEST FAILED", instance);
+			mavlink_and_console_log_critical(mavlink_fd,
+						 "PREFLIGHT FAIL: GYRO #%u SELFTEST FAILED", instance);
 		}
 		success = false;
 		goto out;
@@ -277,7 +286,7 @@ out:
 	return success;
 }
 
-static bool baroCheck(orb_advert_t *mavlink_log_pub, unsigned instance, bool optional, int &device_id, bool report_fail)
+static bool baroCheck(int mavlink_fd, unsigned instance, bool optional, int &device_id, bool report_fail)
 {
 	bool success = true;
 
@@ -289,7 +298,8 @@ static bool baroCheck(orb_advert_t *mavlink_log_pub, unsigned instance, bool opt
 	if (!h.isValid()) {
 		if (!optional) {
 			if (report_fail) {
-				mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: NO BARO SENSOR #%u", instance);
+				mavlink_and_console_log_critical(mavlink_fd,
+							 "PREFLIGHT FAIL: NO BARO SENSOR #%u", instance);
 			}
 		}
 
@@ -302,7 +312,8 @@ static bool baroCheck(orb_advert_t *mavlink_log_pub, unsigned instance, bool opt
 	// int ret = check_calibration(fd, "CAL_BARO%u_ID");
 
 	// if (ret) {
-	// 	mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: BARO #%u UNCALIBRATED", instance);
+	// 	mavlink_and_console_log_critical(mavlink_fd,
+	// 					 "PREFLIGHT FAIL: BARO #%u UNCALIBRATED", instance);
 	// 	success = false;
 	// 	goto out;
 	// }
@@ -313,7 +324,7 @@ static bool baroCheck(orb_advert_t *mavlink_log_pub, unsigned instance, bool opt
 	return success;
 }
 
-static bool airspeedCheck(orb_advert_t *mavlink_log_pub, bool optional, bool report_fail)
+static bool airspeedCheck(int mavlink_fd, bool optional, bool report_fail)
 {
 	bool success = true;
 	int ret;
@@ -324,15 +335,7 @@ static bool airspeedCheck(orb_advert_t *mavlink_log_pub, bool optional, bool rep
 	if ((ret = orb_copy(ORB_ID(airspeed), fd, &airspeed)) ||
 	    (hrt_elapsed_time(&airspeed.timestamp) > (500 * 1000))) {
 		if (report_fail) {
-			mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: AIRSPEED SENSOR MISSING");
-		}
-		success = false;
-		goto out;
-	}
-
-	if (fabsf(airspeed.confidence) < 0.99f) {
-		if (report_fail) {
-			mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: AIRSPEED SENSOR COMM ERROR");
+			mavlink_and_console_log_critical(mavlink_fd, "PREFLIGHT FAIL: AIRSPEED SENSOR MISSING");
 		}
 		success = false;
 		goto out;
@@ -340,7 +343,7 @@ static bool airspeedCheck(orb_advert_t *mavlink_log_pub, bool optional, bool rep
 
 	if (fabsf(airspeed.indicated_airspeed_m_s) > 6.0f) {
 		if (report_fail) {
-			mavlink_and_console_log_critical(mavlink_log_pub, "AIRSPEED WARNING: WIND OR CALIBRATION ISSUE");
+			mavlink_and_console_log_critical(mavlink_fd, "AIRSPEED WARNING: WIND OR CALIBRATION ISSUE");
 		}
 		// XXX do not make this fatal yet
 	}
@@ -350,7 +353,7 @@ out:
 	return success;
 }
 
-static bool gnssCheck(orb_advert_t *mavlink_log_pub, bool report_fail)
+static bool gnssCheck(int mavlink_fd, bool report_fail)
 {
 	bool success = true;
 
@@ -374,7 +377,7 @@ static bool gnssCheck(orb_advert_t *mavlink_log_pub, bool report_fail)
 	//Report failure to detect module
 	if (!success) {
 		if (report_fail) {
-			mavlink_and_console_log_critical(mavlink_log_pub, "PREFLIGHT FAIL: GPS RECEIVER MISSING");
+			mavlink_and_console_log_critical(mavlink_fd, "PREFLIGHT FAIL: GPS RECEIVER MISSING");
 		}
 	}
 
@@ -382,17 +385,9 @@ static bool gnssCheck(orb_advert_t *mavlink_log_pub, bool report_fail)
 	return success;
 }
 
-bool preflightCheck(orb_advert_t *mavlink_log_pub, bool checkMag, bool checkAcc, bool checkGyro,
+bool preflightCheck(int mavlink_fd, bool checkMag, bool checkAcc, bool checkGyro,
 		    bool checkBaro, bool checkAirspeed, bool checkRC, bool checkGNSS, bool checkDynamic, bool reportFailures)
 {
-
-#ifdef __PX4_QURT
-	// WARNING: Preflight checks are important and should be added back when
-	// all the sensors are supported
-	PX4_WARN("WARNING: Preflight checks PASS always.");
-	return true;
-#endif
-
 	bool failed = false;
 
 	/* ---- MAG ---- */
@@ -406,7 +401,7 @@ bool preflightCheck(orb_advert_t *mavlink_log_pub, bool checkMag, bool checkAcc,
 			bool required = (i < max_mandatory_mag_count);
 			int device_id = -1;
 
-			if (!magnometerCheck(mavlink_log_pub, i, !required, device_id, reportFailures) && required) {
+			if (!magnometerCheck(mavlink_fd, i, !required, device_id, reportFailures) && required) {
 				failed = true;
 			}
 
@@ -418,7 +413,7 @@ bool preflightCheck(orb_advert_t *mavlink_log_pub, bool checkMag, bool checkAcc,
 		/* check if the primary device is present */
 		if (!prime_found && prime_id != 0) {
 			if (reportFailures) {
-				mavlink_and_console_log_critical(mavlink_log_pub, "Warning: Primary compass not found");
+				mavlink_and_console_log_critical(mavlink_fd, "Warning: Primary compass not found");
 			}
 			failed = true;
 		}
@@ -435,7 +430,7 @@ bool preflightCheck(orb_advert_t *mavlink_log_pub, bool checkMag, bool checkAcc,
 			bool required = (i < max_mandatory_accel_count);
 			int device_id = -1;
 
-			if (!accelerometerCheck(mavlink_log_pub, i, !required, checkDynamic, device_id, reportFailures) && required) {
+			if (!accelerometerCheck(mavlink_fd, i, !required, checkDynamic, device_id, reportFailures) && required) {
 				failed = true;
 			}
 
@@ -447,7 +442,7 @@ bool preflightCheck(orb_advert_t *mavlink_log_pub, bool checkMag, bool checkAcc,
 		/* check if the primary device is present */
 		if (!prime_found && prime_id != 0) {
 			if (reportFailures) {
-				mavlink_and_console_log_critical(mavlink_log_pub, "Warning: Primary accelerometer not found");
+				mavlink_and_console_log_critical(mavlink_fd, "Warning: Primary accelerometer not found");
 			}
 			failed = true;
 		}
@@ -464,7 +459,7 @@ bool preflightCheck(orb_advert_t *mavlink_log_pub, bool checkMag, bool checkAcc,
 			bool required = (i < max_mandatory_gyro_count);
 			int device_id = -1;
 
-			if (!gyroCheck(mavlink_log_pub, i, !required, device_id, reportFailures) && required) {
+			if (!gyroCheck(mavlink_fd, i, !required, device_id, reportFailures) && required) {
 				failed = true;
 			}
 
@@ -476,7 +471,7 @@ bool preflightCheck(orb_advert_t *mavlink_log_pub, bool checkMag, bool checkAcc,
 		/* check if the primary device is present */
 		if (!prime_found && prime_id != 0) {
 			if (reportFailures) {
-				mavlink_and_console_log_critical(mavlink_log_pub, "Warning: Primary gyro not found");
+				mavlink_and_console_log_critical(mavlink_fd, "Warning: Primary gyro not found");
 			}
 			failed = true;
 		}
@@ -493,7 +488,7 @@ bool preflightCheck(orb_advert_t *mavlink_log_pub, bool checkMag, bool checkAcc,
 			bool required = (i < max_mandatory_baro_count);
 			int device_id = -1;
 
-			if (!baroCheck(mavlink_log_pub, i, !required, device_id, reportFailures) && required) {
+			if (!baroCheck(mavlink_fd, i, !required, device_id, reportFailures) && required) {
 				failed = true;
 			}
 
@@ -503,10 +498,10 @@ bool preflightCheck(orb_advert_t *mavlink_log_pub, bool checkMag, bool checkAcc,
 		}
 
 		// TODO there is no logic in place to calibrate the primary baro yet
-		// // check if the primary device is present
+		// // check if the primary device is present 
 		if (!prime_found && prime_id != 0) {
 			if (reportFailures) {
-				mavlink_and_console_log_critical(mavlink_log_pub, "warning: primary barometer not operational");
+				mavlink_and_console_log_critical(mavlink_fd, "warning: primary barometer not operational");
 			}
 			failed = true;
 		}
@@ -514,16 +509,16 @@ bool preflightCheck(orb_advert_t *mavlink_log_pub, bool checkMag, bool checkAcc,
 
 	/* ---- AIRSPEED ---- */
 	if (checkAirspeed) {
-		if (!airspeedCheck(mavlink_log_pub, true, reportFailures)) {
+		if (!airspeedCheck(mavlink_fd, true, reportFailures)) {
 			failed = true;
 		}
 	}
 
 	/* ---- RC CALIBRATION ---- */
 	if (checkRC) {
-		if (rc_calibration_check(mavlink_log_pub, reportFailures) != OK) {
+		if (rc_calibration_check(mavlink_fd, reportFailures) != OK) {
 			if (reportFailures) {
-				mavlink_and_console_log_critical(mavlink_log_pub, "RC calibration check failed");
+				mavlink_and_console_log_critical(mavlink_fd, "RC calibration check failed");
 			}
 			failed = true;
 		}
@@ -531,7 +526,7 @@ bool preflightCheck(orb_advert_t *mavlink_log_pub, bool checkMag, bool checkAcc,
 
 	/* ---- Global Navigation Satellite System receiver ---- */
 	if (checkGNSS) {
-		if (!gnssCheck(mavlink_log_pub, reportFailures)) {
+		if (!gnssCheck(mavlink_fd, reportFailures)) {
 			failed = true;
 		}
 	}

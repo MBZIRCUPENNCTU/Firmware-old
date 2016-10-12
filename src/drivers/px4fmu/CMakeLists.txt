@@ -33,7 +33,7 @@
 px4_add_module(
 	MODULE drivers__px4fmu
 	MAIN fmu
-	STACK_MAIN 1200
+	STACK 1200
 	COMPILE_FLAGS
 		-Os
 	SRCS

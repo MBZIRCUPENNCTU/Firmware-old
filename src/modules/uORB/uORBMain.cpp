@@ -45,7 +45,7 @@ extern "C" { __EXPORT int uorb_main(int argc, char *argv[]); }
 static uORB::DeviceMaster *g_dev = nullptr;
 static void usage()
 {
-	PX4_INFO("Usage: uorb 'start', 'test', 'latency_test' or 'status'");
+	warnx("Usage: uorb 'start', 'test', 'latency_test' or 'status'");
 }
 
 
@@ -65,7 +65,7 @@ uorb_main(int argc, char *argv[])
 	if (!strcmp(argv[1], "start")) {
 
 		if (g_dev != nullptr) {
-			PX4_WARN("already loaded");
+			warnx("already loaded");
 			/* user wanted to start uorb, its already running, no error */
 			return 0;
 		}
@@ -74,12 +74,12 @@ uorb_main(int argc, char *argv[])
 		g_dev = new uORB::DeviceMaster(uORB::PUBSUB);
 
 		if (g_dev == nullptr) {
-			PX4_ERR("driver alloc failed");
+			warnx("driver alloc failed");
 			return -ENOMEM;
 		}
 
 		if (OK != g_dev->init()) {
-			PX4_ERR("driver init failed");
+			warnx("driver init failed");
 			delete g_dev;
 			g_dev = nullptr;
 			return -EIO;
@@ -94,11 +94,6 @@ uorb_main(int argc, char *argv[])
 	 * Test the driver/device.
 	 */
 	if (!strcmp(argv[1], "test")) {
-		if (!g_dev) {
-			PX4_WARN("orb is not running! start it first");
-			return -ESRCH;
-		}
-
 		uORBTest::UnitTest &t = uORBTest::UnitTest::instance();
 		return t.test();
 	}
@@ -127,13 +122,6 @@ uorb_main(int argc, char *argv[])
 	 * Print driver information.
 	 */
 	if (!strcmp(argv[1], "status")) {
-		if (g_dev != nullptr) {
-			PX4_INFO("uorb is running");
-
-		} else {
-			PX4_INFO("uorb is not running");
-		}
-
 		return OK;
 	}
 

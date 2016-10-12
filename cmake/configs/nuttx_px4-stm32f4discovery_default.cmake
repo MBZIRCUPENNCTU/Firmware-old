@@ -30,13 +30,13 @@ set(config_module_list
 	modules/param
 	modules/systemlib
 	modules/systemlib/mixer
+	modules/controllib
 	modules/uORB
 
 	#
 	# Libraries
 	#
 	#lib/mathlib/CMSIS
-	lib/controllib
 	lib/mathlib
 	lib/mathlib/math/filter
 	lib/ecl
@@ -80,12 +80,8 @@ set(config_extra_builtin_cmds
 
 add_custom_target(sercon)
 set_target_properties(sercon PROPERTIES
-	PRIORITY "SCHED_PRIORITY_DEFAULT"
-	MAIN "sercon"
-	STACK_MAIN "2048")
+	MAIN "sercon" STACK "2048")
 
 add_custom_target(serdis)
 set_target_properties(serdis PROPERTIES
-	PRIORITY "SCHED_PRIORITY_DEFAULT"
-	MAIN "serdis"
-	STACK_MAIN "2048")
+	MAIN "serdis" STACK "2048")

@@ -50,11 +50,6 @@
  *
  * @min 0
  * @max 4
- * @value 0 None
- * @value 1 Warning
- * @value 2 Loiter
- * @value 3 Return
- * @value 4 Terminate
  * @group Geofence
  */
 PARAM_DEFINE_INT32(GF_ACTION, 1);
@@ -67,8 +62,6 @@ PARAM_DEFINE_INT32(GF_ACTION, 1);
  *
  * @min 0
  * @max 1
- * @value 0 WGS84
- * @value 1 AMSL
  * @group Geofence
  */
 PARAM_DEFINE_INT32(GF_ALTMODE, 0);
@@ -82,8 +75,6 @@ PARAM_DEFINE_INT32(GF_ALTMODE, 0);
  *
  * @min 0
  * @max 1
- * @value 0 GPOS
- * @value 1 GPS
  * @group Geofence
  */
 PARAM_DEFINE_INT32(GF_SOURCE, 0);
@@ -104,7 +95,7 @@ PARAM_DEFINE_INT32(GF_COUNT, -1);
  *
  * Set to > 0 to activate a geofence action if horizontal distance to home exceeds this value.
  *
- * @unit m
+ * @unit meters
  * @min -1
  * @group Geofence
  */
@@ -115,7 +106,7 @@ PARAM_DEFINE_INT32(GF_MAX_HOR_DIST, -1);
  *
  * Set to > 0 to activate a geofence action if vertical distance to home exceeds this value.
  *
- * @unit m
+ * @unit meters
  * @min -1
  * @group Geofence
  */

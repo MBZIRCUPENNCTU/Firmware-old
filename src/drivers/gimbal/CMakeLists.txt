@@ -33,7 +33,6 @@
 px4_add_module(
 	MODULE drivers__gimbal
 	MAIN gimbal
-	STACK_MAIN 1024
 	COMPILE_FLAGS
 		-Os
 	SRCS

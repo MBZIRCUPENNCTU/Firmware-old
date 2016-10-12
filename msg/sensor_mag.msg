@@ -10,5 +10,3 @@ float32 temperature
 int16 x_raw
 int16 y_raw
 int16 z_raw
-
-uint32 device_id

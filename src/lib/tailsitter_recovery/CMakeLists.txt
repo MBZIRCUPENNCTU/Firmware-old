@@ -32,7 +32,6 @@
 ############################################################################
 px4_add_module(
 	MODULE lib__tailsitter_recovery
-	STACK_MAIN 400
 	COMPILE_FLAGS
 		-Os
 	SRCS

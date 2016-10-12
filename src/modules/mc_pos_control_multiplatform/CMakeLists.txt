@@ -37,6 +37,7 @@ px4_add_module(
 		mc_pos_control_main.cpp
 		mc_pos_control_start_nuttx.cpp
 		mc_pos_control.cpp
+		mc_pos_control_params.c
 	DEPENDS
 		platforms__common
 	)

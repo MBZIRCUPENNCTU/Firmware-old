@@ -95,7 +95,7 @@ usage(const char *reason)
 int local_position_estimator_main(int argc, char *argv[])
 {
 
-	if (argc < 2) {
+	if (argc < 1) {
 		usage("missing command");
 	}
 
@@ -112,7 +112,7 @@ int local_position_estimator_main(int argc, char *argv[])
 		deamon_task = px4_task_spawn_cmd("lp_estimator",
 						 SCHED_DEFAULT,
 						 SCHED_PRIORITY_MAX - 5,
-						 12000,
+						 10240,
 						 local_position_estimator_thread_main,
 						 (argv && argc > 2) ? (char *const *) &argv[2] : (char *const *) NULL);
 		return 0;
@@ -152,9 +152,10 @@ int local_position_estimator_thread_main(int argc, char *argv[])
 
 	using namespace control;
 
-	BlockLocalPositionEstimator est;
 
 	thread_running = true;
+
+	BlockLocalPositionEstimator est;
 
 	while (!thread_should_exit) {
 		est.update();

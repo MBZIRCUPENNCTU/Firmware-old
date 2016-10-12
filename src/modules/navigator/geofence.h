@@ -53,12 +53,10 @@
 
 #define GEOFENCE_FILENAME PX4_ROOTFSDIR"/fs/microsd/etc/geofence.txt"
 
-class Navigator;
-
 class Geofence : public control::SuperBlock
 {
 public:
-	Geofence(Navigator *navigator);
+	Geofence();
 	~Geofence();
 
 	/* Altitude mode, corresponding to the param GF_ALTMODE */
@@ -107,9 +105,9 @@ public:
 
 	int getGeofenceAction() { return _param_action.get(); }
 
-private:
-	Navigator	*_navigator;
+	void setMavlinkFd(int value) { _mavlinkFd = value; }
 
+private:
 	orb_advert_t	_fence_pub;			/**< publish fence topic */
 
 	home_position_s _home_pos;
@@ -132,6 +130,8 @@ private:
 	control::BlockParamInt _param_max_ver_distance;
 
 	unsigned _outside_counter;
+
+	int _mavlinkFd;
 
 	bool inside(double lat, double lon, float altitude);
 	bool inside(const struct vehicle_global_position_s &global_position);

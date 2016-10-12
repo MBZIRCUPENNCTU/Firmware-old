@@ -49,7 +49,7 @@ namespace ringbuffer __EXPORT
 class RingBuffer
 {
 public:
-	RingBuffer(unsigned num_items, size_t item_size);
+	RingBuffer(unsigned ring_size, size_t entry_size);
 	virtual ~RingBuffer();
 
 	/**

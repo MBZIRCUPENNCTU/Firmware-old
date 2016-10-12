@@ -88,7 +88,7 @@ int MuorbTestExample::DefaultTest()
 
 	int i = 0;
 	pwm.error_count++;
-	sc.gyro_errcount[i]++;
+	sc.gyro_errcount++;
 
 	while (!appState.exitRequested() && i < 10) {
 

@@ -96,13 +96,14 @@ set(config_module_list
 	modules/param
 	modules/systemlib
 	modules/systemlib/mixer
+	modules/controllib
 	modules/uORB
 	modules/dataman
 
 	#
 	# Libraries
 	#
-	lib/controllib
+	#lib/mathlib/CMSIS
 	lib/mathlib
 	lib/mathlib/math/filter
 	lib/ecl
@@ -164,19 +165,17 @@ set(config_io_board
 	)
 
 set(config_extra_libs
+	${CMAKE_SOURCE_DIR}/src/lib/mathlib/CMSIS/libarm_cortexM4lf_math.a
 	)
 
 set(config_io_extra_libs
+	#${CMAKE_SOURCE_DIR}/src/lib/mathlib/CMSIS/libarm_cortexM3l_math.a
 	)
 
 add_custom_target(sercon)
 set_target_properties(sercon PROPERTIES
-	PRIORITY "SCHED_PRIORITY_DEFAULT"
-	MAIN "sercon"
-	STACK_MAIN "2048")
+	MAIN "sercon" STACK "2048")
 
 add_custom_target(serdis)
 set_target_properties(serdis PROPERTIES
-	PRIORITY "SCHED_PRIORITY_DEFAULT"
-	MAIN "serdis"
-	STACK_MAIN "2048")
+	MAIN "serdis" STACK "2048")

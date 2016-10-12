@@ -47,3 +47,9 @@
 #include "math/Limits.hpp"
 
 #endif
+
+#ifdef CONFIG_ARCH_ARM
+
+#include "CMSIS/Include/arm_math.h"
+
+#endif

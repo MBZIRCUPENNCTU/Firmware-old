@@ -49,7 +49,6 @@
  *
  * The delay in milliseconds of the velocity estimate from GPS.
  *
- * @unit ms
  * @min 0
  * @max 1000
  * @group Position Estimator
@@ -61,7 +60,6 @@ PARAM_DEFINE_INT32(PE_VEL_DELAY_MS, 230);
  *
  * The delay in milliseconds of the position estimate from GPS.
  *
- * @unit ms
  * @min 0
  * @max 1000
  * @group Position Estimator
@@ -73,7 +71,6 @@ PARAM_DEFINE_INT32(PE_POS_DELAY_MS, 210);
  *
  * The delay in milliseconds of the height estimate from the barometer.
  *
- * @unit ms
  * @min 0
  * @max 1000
  * @group Position Estimator
@@ -86,7 +83,6 @@ PARAM_DEFINE_INT32(PE_HGT_DELAY_MS, 350);
  * The delay in milliseconds of the magnetic field estimate from
  * the magnetometer.
  *
- * @unit ms
  * @min 0
  * @max 1000
  * @group Position Estimator
@@ -98,7 +94,6 @@ PARAM_DEFINE_INT32(PE_MAG_DELAY_MS, 30);
  *
  * The delay in milliseconds of the airspeed estimate.
  *
- * @unit ms
  * @min 0
  * @max 1000
  * @group Position Estimator
@@ -109,6 +104,7 @@ PARAM_DEFINE_INT32(PE_TAS_DELAY_MS, 210);
  * GPS vs. barometric altitude update weight
  *
  * RE-CHECK this.
+ *
  * @min 0.0
  * @max 1.0
  * @group Position Estimator

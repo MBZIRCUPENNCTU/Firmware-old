@@ -46,10 +46,6 @@
 /**
  * Enables testmode (Identify) of MKBLCTRL Driver
  *
- * @value 0 Disabled
- * @value 1 Enabled
- * @min 0
- * @max 1
  * @group MKBLCTRL Testmode
  */
 PARAM_DEFINE_INT32(MKBLCTRL_TEST, 0);

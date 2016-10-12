@@ -1,6 +1,6 @@
 ############################################################################
 #
-#   Copyright (c) 2015-2016 PX4 Development Team. All rights reserved.
+#   Copyright (c) 2015 PX4 Development Team. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -30,26 +30,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 ############################################################################
-set(SENSORS_SRCS sensors.cpp)
-if (${OS} STREQUAL "qurt")
-	list(APPEND SENSORS_SRCS
-		sensors_init_qurt.cpp)
-	else()
-	list(APPEND SENSORS_SRCS
-		sensors_init.cpp)
-endif()
-
 px4_add_module(
 	MODULE modules__sensors
 	MAIN sensors
 	PRIORITY "SCHED_PRIORITY_MAX-5"
-	STACK_MAIN 1200
+	STACK 1200
 	COMPILE_FLAGS
 		-Wno-type-limits
 		-O3
 	SRCS
-		${SENSORS_SRCS}
+		sensors.cpp
 	DEPENDS
 		platforms__common
 	)
-# vim: set noet ft=cmake fenc=utf-8 ff=unix :
+# vim: set noet ft=cmake fenc=utf-8 ff=unix : 

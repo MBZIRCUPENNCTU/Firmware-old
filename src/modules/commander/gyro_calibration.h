@@ -40,8 +40,7 @@
 #define GYRO_CALIBRATION_H_
 
 #include <stdint.h>
-#include <uORB/uORB.h>
 
-int do_gyro_calibration(orb_advert_t *mavlink_log_pub);
+int do_gyro_calibration(int mavlink_fd);
 
 #endif /* GYRO_CALIBRATION_H_ */

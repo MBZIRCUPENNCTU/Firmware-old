@@ -33,7 +33,7 @@
 px4_add_module(
 	MODULE modules__bottle_drop
 	MAIN bottle_drop
-	STACK_MAIN 1200
+	STACK 1200
 	COMPILE_FLAGS
 		-Os
 	SRCS

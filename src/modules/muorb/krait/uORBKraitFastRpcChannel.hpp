@@ -55,21 +55,8 @@ public:
 	 */
 	static uORB::KraitFastRpcChannel *GetInstance()
 	{
-		if (_InstancePtr == nullptr) {
-			_InstancePtr = new uORB::KraitFastRpcChannel();
-		}
-
-		return _InstancePtr;
+		return &(_Instance);
 	}
-
-	/**
-	 * Static method to check if there is an instance.
-	 */
-	static bool isInstance()
-	{
-		return (_InstancePtr != nullptr);
-	}
-
 
 	/**
 	 * @brief Interface to notify the remote entity of interest of a
@@ -132,7 +119,7 @@ public:
 	void Stop();
 
 private: // data members
-	static uORB::KraitFastRpcChannel *_InstancePtr;
+	static uORB::KraitFastRpcChannel _Instance;
 	uORBCommunicator::IChannelRxHandler *_RxHandler;
 	pthread_t   _RecvThread;
 	bool _ThreadStarted;

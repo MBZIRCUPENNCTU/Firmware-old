@@ -4,23 +4,18 @@
 
 
 /**
+ * Enable local position estimator.
+ *
+ * @group Local Position Estimator
+ */
+PARAM_DEFINE_INT32(LPE_ENABLED, 1);
+
+/**
  * Enable accelerometer integration for prediction.
  *
- * @boolean
  * @group Local Position Estimator
  */
 PARAM_DEFINE_INT32(LPE_INTEGRATE, 1);
-
-/**
- * Optical flow z offset from center
- *
- * @group Local Position Estimator
- * @unit m
- * @min -1
- * @max 1
- * @decimal 3
- */
-PARAM_DEFINE_FLOAT(LPE_FLW_OFF_Z, 0.0f);
 
 /**
  * Optical flow xy standard deviation.
@@ -29,19 +24,8 @@ PARAM_DEFINE_FLOAT(LPE_FLW_OFF_Z, 0.0f);
  * @unit m
  * @min 0.01
  * @max 1
- * @decimal 3
  */
 PARAM_DEFINE_FLOAT(LPE_FLW_XY, 0.01f);
-
-/**
- * Optical flow minimum quality threshold
- *
- * @group Local Position Estimator
- * @min 0
- * @max 255
- * @decimal 0
- */
-PARAM_DEFINE_INT32(LPE_FLW_QMIN, 75);
 
 /**
  * Sonar z standard deviation.
@@ -50,20 +34,8 @@ PARAM_DEFINE_INT32(LPE_FLW_QMIN, 75);
  * @unit m
  * @min 0.01
  * @max 1
- * @decimal 3
  */
-PARAM_DEFINE_FLOAT(LPE_SNR_Z, 0.05f);
-
-/**
- * Sonar z offset from center of vehicle +down
- *
- * @group Local Position Estimator
- * @unit m
- * @min -1
- * @max 1
- * @decimal 3
- */
-PARAM_DEFINE_FLOAT(LPE_SNR_OFF_Z, 0.00f);
+PARAM_DEFINE_FLOAT(LPE_SNR_Z, 0.2f);
 
 /**
  * Lidar z standard deviation.
@@ -72,20 +44,8 @@ PARAM_DEFINE_FLOAT(LPE_SNR_OFF_Z, 0.00f);
  * @unit m
  * @min 0.01
  * @max 1
- * @decimal 3
  */
 PARAM_DEFINE_FLOAT(LPE_LDR_Z, 0.03f);
-
-/**
- * Lidar z offset from center of vehicle +down
- *
- * @group Local Position Estimator
- * @unit m
- * @min -1
- * @max 1
- * @decimal 3
- */
-PARAM_DEFINE_FLOAT(LPE_LDR_OFF_Z, 0.00f);
 
 /**
  * Accelerometer xy standard deviation
@@ -100,7 +60,6 @@ PARAM_DEFINE_FLOAT(LPE_LDR_OFF_Z, 0.00f);
  * @unit m/s^2
  * @min 0.00001
  * @max 2
- * @decimal 4
  */
 PARAM_DEFINE_FLOAT(LPE_ACC_XY, 0.0454f);
 
@@ -113,7 +72,6 @@ PARAM_DEFINE_FLOAT(LPE_ACC_XY, 0.0454f);
  * @unit m/s^2
  * @min 0.00001
  * @max 2
- * @decimal 4
  */
 PARAM_DEFINE_FLOAT(LPE_ACC_Z, 0.0454f);
 
@@ -124,29 +82,8 @@ PARAM_DEFINE_FLOAT(LPE_ACC_Z, 0.0454f);
  * @unit m
  * @min 0.01
  * @max 3
- * @decimal 2
  */
 PARAM_DEFINE_FLOAT(LPE_BAR_Z, 1.0f);
-
-/**
- * Enable GPS
- *
- * @group Local Position Estimator
- * @boolean
- */
-PARAM_DEFINE_INT32(LPE_GPS_ON, 1);
-
-/**
- * GPS delay compensaton
- *
- * @group Local Position Estimator
- * @unit sec
- * @min 0
- * @max 0.4
- * @decimal 2
- */
-PARAM_DEFINE_FLOAT(LPE_GPS_DELAY, 0.25f);
-
 
 /**
  * GPS xy standard deviation.
@@ -155,7 +92,6 @@ PARAM_DEFINE_FLOAT(LPE_GPS_DELAY, 0.25f);
  * @unit m
  * @min 0.01
  * @max 5
- * @decimal 2
  */
 PARAM_DEFINE_FLOAT(LPE_GPS_XY, 2.0f);
 
@@ -165,10 +101,9 @@ PARAM_DEFINE_FLOAT(LPE_GPS_XY, 2.0f);
  * @group Local Position Estimator
  * @unit m
  * @min 0.01
- * @max 200
- * @decimal 2
+ * @max 20
  */
-PARAM_DEFINE_FLOAT(LPE_GPS_Z, 100.0f);
+PARAM_DEFINE_FLOAT(LPE_GPS_Z, 10.0f);
 
 /**
  * GPS xy velocity standard deviation.
@@ -177,9 +112,8 @@ PARAM_DEFINE_FLOAT(LPE_GPS_Z, 100.0f);
  * @unit m/s
  * @min 0.01
  * @max 2
- * @decimal 3
  */
-PARAM_DEFINE_FLOAT(LPE_GPS_VXY, 0.25f);
+PARAM_DEFINE_FLOAT(LPE_GPS_VXY, 0.275f);
 
 /**
  * GPS z velocity standard deviation.
@@ -188,9 +122,8 @@ PARAM_DEFINE_FLOAT(LPE_GPS_VXY, 0.25f);
  * @unit m/s
  * @min 0.01
  * @max 2
- * @decimal 3
  */
-PARAM_DEFINE_FLOAT(LPE_GPS_VZ, 0.25f);
+PARAM_DEFINE_FLOAT(LPE_GPS_VZ, 0.237f);
 
 /**
  * GPS max eph
@@ -199,9 +132,10 @@ PARAM_DEFINE_FLOAT(LPE_GPS_VZ, 0.25f);
  * @unit m
  * @min 1.0
  * @max 5.0
- * @decimal 3
  */
 PARAM_DEFINE_FLOAT(LPE_EPH_MAX, 3.0f);
+
+
 
 /**
  * Vision xy standard deviation.
@@ -210,7 +144,6 @@ PARAM_DEFINE_FLOAT(LPE_EPH_MAX, 3.0f);
  * @unit m
  * @min 0.01
  * @max 1
- * @decimal 3
  */
 PARAM_DEFINE_FLOAT(LPE_VIS_XY, 0.5f);
 
@@ -221,17 +154,19 @@ PARAM_DEFINE_FLOAT(LPE_VIS_XY, 0.5f);
  * @unit m
  * @min 0.01
  * @max 2
- * @decimal 3
  */
 PARAM_DEFINE_FLOAT(LPE_VIS_Z, 0.5f);
 
 /**
- * Enabled vision correction
+ * Circuit breaker to disable vision input.
+ *
+ * Set to the appropriate key (328754) to disable vision input.
  *
  * @group Local Position Estimator
- * @boolean
+ * @min 0
+ * @max 1
  */
-PARAM_DEFINE_INT32(LPE_VIS_ON, 1);
+PARAM_DEFINE_INT32(LPE_NO_VISION, 0);
 
 /**
  * Vicon position standard deviation.
@@ -240,84 +175,48 @@ PARAM_DEFINE_INT32(LPE_VIS_ON, 1);
  * @unit m
  * @min 0.01
  * @max 1
- * @decimal 3
  */
 PARAM_DEFINE_FLOAT(LPE_VIC_P, 0.05f);
 
 /**
- * Position propagation noise density
+ * Position propagation process noise power (variance*sampling rate).
  *
  * @group Local Position Estimator
- * @unit m/s/sqrt(Hz)
+ * @unit (m/s^2)-s
  * @min 0
  * @max 1
- * @decimal 8
  */
-PARAM_DEFINE_FLOAT(LPE_PN_P, 0.1f);
+PARAM_DEFINE_FLOAT(LPE_PN_P, 0.0f);
 
 /**
- * Velocity propagation noise density
+ * Velocity propagation process noise power (variance*sampling rate).
  *
  * @group Local Position Estimator
- * @unit (m/s)/s/sqrt(Hz)
+ * @unit (m/s)-s
+ * @min 0
+ * @max 5
+ */
+PARAM_DEFINE_FLOAT(LPE_PN_V, 0.0f);
+
+/**
+ * Accel bias propagation process noise power (variance*sampling rate).
+ *
+ * @group Local Position Estimator
+ * @unit (m/s)-s
  * @min 0
  * @max 1
- * @decimal 8
  */
-PARAM_DEFINE_FLOAT(LPE_PN_V, 0.1f);
+PARAM_DEFINE_FLOAT(LPE_PN_B, 1e-8f);
 
 /**
- * Accel bias propagation noise density
+ * Fault detection threshold, for chi-squared dist.
+ *
+ * TODO add separate params for 1 dof, 3 dof, and 6 dof beta
+ * or false alarm rate in false alarms/hr
  *
  * @group Local Position Estimator
- * @unit (m/s^2)/s/sqrt(Hz)
- * @min 0
- * @max 1
- * @decimal 8
+ * @unit
+ * @min 3
+ * @max 1000
  */
-PARAM_DEFINE_FLOAT(LPE_PN_B, 1e-3f);
-
-/**
- * Terrain random walk noise density
- *
- * @group Local Position Estimator
- * @unit m/s/sqrt(Hz)
- * @min 0
- * @max 1
- * @decimal 3
- */
-PARAM_DEFINE_FLOAT(LPE_PN_T, 1e-3f);
-
-/**
- * Flow gyro high pass filter cut off frequency
- *
- * @group Local Position Estimator
- * @unit Hz
- * @min 0
- * @max 2
- * @decimal 3
- */
-PARAM_DEFINE_FLOAT(LPE_FGYRO_HP, 0.1f);
-
-/**
- * Home latitude for nav w/o GPS
- *
- * @group Local Position Estimator
- * @unit deg
- * @min -90
- * @max 90
- * @decimal 8
- */
-PARAM_DEFINE_FLOAT(LPE_LAT, 40.430f);
-
-/**
- * Home longitude for nav w/o GPS
- *
- * @group Local Position Estimator
- * @unit deg
- * @min -180
- * @max 180
- * @decimal 8
- */
-PARAM_DEFINE_FLOAT(LPE_LON, -86.929);
-
+PARAM_DEFINE_FLOAT(LPE_BETA_MAX, 1000.0f);
